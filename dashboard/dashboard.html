@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Claims Risk & Leakage Intelligence</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <title>Claims Risk & Leakage Dashboard</title>
+    <link rel="icon" type="image/png" href="/Untitled design.png">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fb;
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        .header {
+            background: #ffffff;
+            padding: 20px 40px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .nav {
+            padding: 15px 40px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .nav button {
+            background: none;
+            border: none;
+            margin-right: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            color: #374151;
+        }
+
+        .nav button:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            padding: 40px;
+            max-width: 1300px;
+            margin: auto;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .kpi-card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .kpi-label {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .kpi-value {
+            font-size: 26px;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        th {
+            background: #f3f4f6;
+        }
+
+        .risk-high { color: #b91c1c; font-weight: bold; }
+        .risk-medium { color: #b45309; font-weight: bold; }
+        .risk-low { color: #065f46; font-weight: bold; }
+
+        input {
+            padding: 8px;
+            width: 250px;
+            margin-right: 10px;
+        }
+
+        button.action {
+            padding: 8px 15px;
+            border: 1px solid #d1d5db;
+            background: #ffffff;
+            cursor: pointer;
+        }
+
+        pre {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+
+        .hidden { display: none; }
+
+        .impact-box {
+            background: #eef2ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            height: 50px;
+        }
+
+
+    </style>
+</head>
+<body>
+    <div class="header">
+    <img src="/Untitled design.png" alt="Company Logo" class="logo">
+    <h1>Claims Risk & Leakage Dashboard</h1>
+</div>
+
+
+<div class="header">
+    <h1>Claims Risk & Leakage Intelligence Platform</h1>
+</div>
+
+<div class="nav">
+    <button onclick="showView('overview')">Executive Overview</button>
+    <button onclick="showView('monitor')">High Risk Monitor</button>
+    <button onclick="showView('lookup')">Claim Deep Dive</button>
+</div>
+
+<div class="container">
+
+    <!-- ================= EXECUTIVE OVERVIEW ================= -->
+    <div id="overviewView">
+        <h2>Executive Overview</h2>
+
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Total Claims</div>
+                <div class="kpi-value" id="totalClaims">--</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">High Risk Claims</div>
+                <div class="kpi-value" id="highRiskClaims">--</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Leakage Exposure</div>
+                <div class="kpi-value" id="leakageExposure">--</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Avg Days to Report</div>
+                <div class="kpi-value" id="avgDays">--</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Risk Distribution</h3>
+            <div id="riskChart"></div>
+        </div>
+
+        <div class="impact-box">
+            <strong>Business Impact Insight:</strong>
+            <div id="impactText">Loading...</div>
+        </div>
+    </div>
+
+    <!-- ================= HIGH RISK MONITOR ================= -->
+    <div id="monitorView" class="hidden">
+        <h2>High Risk Investigation Queue</h2>
+
+        <div class="section">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Claim ID</th>
+                        <th>Risk Score</th>
+                        <th>Risk Level</th>
+                        <th>Leakage Amount</th>
+                        <th>Risk Reasons</th>
+                    </tr>
+                </thead>
+                <tbody id="highRiskTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ================= CLAIM DEEP DIVE ================= -->
+    <div id="lookupView" class="hidden">
+        <h2>Claim Deep Dive</h2>
+
+        <div class="section">
+            <input type="text" id="claimSearch" placeholder="Enter Claim ID">
+            <button class="action" onclick="searchClaim()">Search</button>
+            <pre id="claimResult"></pre>
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+const API_BASE = "http://127.0.0.1:8000";
+
+function showView(view) {
+    document.getElementById("overviewView").classList.add("hidden");
+    document.getElementById("monitorView").classList.add("hidden");
+    document.getElementById("lookupView").classList.add("hidden");
+
+    document.getElementById(view + "View").classList.remove("hidden");
+}
+
+// ================= Load Executive KPIs =================
+async function loadKPIs() {
+    const res = await fetch(`${API_BASE}/dashboard/kpis`);
+    const data = await res.json();
+
+    document.getElementById("totalClaims").innerText = data.total_claims;
+    document.getElementById("highRiskClaims").innerText = data.high_risk_claims;
+    document.getElementById("leakageExposure").innerText = data.total_leakage_exposure;
+    document.getElementById("avgDays").innerText = data.avg_days_to_report.toFixed(2);
+
+    const high = data.high_risk_claims;
+    const other = data.total_claims - high;
+
+    Plotly.newPlot("riskChart", [{
+        values: [high, other],
+        labels: ["High Risk", "Other"],
+        type: "pie"
+    }]);
+
+    document.getElementById("impactText").innerText =
+        `Currently ${high} claims are classified as HIGH risk. 
+        Total leakage exposure stands at ${data.total_leakage_exposure}. 
+        Early identification enables investigation before settlement.`;
+}
+
+// ================= Load High Risk Claims =================
+async function loadHighRiskClaims() {
+    const res = await fetch(`${API_BASE}/claims/high-risk?limit=20`);
+    const claims = await res.json();
+
+    const table = document.getElementById("highRiskTable");
+    table.innerHTML = "";
+
+    claims.forEach(c => {
+        const riskClass =
+            c.risk_level === "HIGH" ? "risk-high" :
+            c.risk_level === "MEDIUM" ? "risk-medium" :
+            "risk-low";
+
+        table.innerHTML += `
+            <tr>
+                <td>${c.claim_id}</td>
+                <td>${c.risk_score}</td>
+                <td class="${riskClass}">${c.risk_level}</td>
+                <td>${c.leakage_amount}</td>
+                <td>${c.risk_reasons}</td>
+            </tr>
+        `;
+    });
+}
+
+// ================= Claim Lookup =================
+async function searchClaim() {
+    const claimId = document.getElementById("claimSearch").value;
+    const res = await fetch(`${API_BASE}/claims/${claimId}`);
+
+    if (res.status === 404) {
+        document.getElementById("claimResult").innerText = "Claim not found.";
+        return;
+    }
+
+    const data = await res.json();
+    document.getElementById("claimResult").innerText =
+        JSON.stringify(data, null, 2);
+}
+
+// ================= Initialize =================
+loadKPIs();
+loadHighRiskClaims();
+
+</script>
+
+</body>
+</html>
